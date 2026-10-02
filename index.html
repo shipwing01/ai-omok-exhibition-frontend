@@ -13,35 +13,22 @@
     button{border:0;border-radius:9px;padding:12px 17px;background:var(--blue);color:#fff;font:inherit;font-weight:750;cursor:pointer}button:hover{filter:brightness(.92)}button:disabled{background:#94a3b8;cursor:not-allowed}.secondary{background:#53677b}.submit{background:var(--green)}.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
     .status{padding:13px 14px;border-radius:9px;background:#edf2f7;margin-top:16px;line-height:1.5}.success{background:#e5f8ed;color:var(--green)}.error{background:#feeceb;color:var(--red)}
     #workspace{display:none}.studentbar{display:flex;justify-content:space-between;gap:14px;background:#eef6ff;padding:14px;border-radius:10px}.online{color:var(--green)}
-    .header-actions{display:flex;align-items:center;gap:12px}.header-student{font-size:.9rem}.auth-modes{display:flex;gap:8px;margin:14px 0}.auth-modes button{flex:1}.auth-form[hidden]{display:none}
     .grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:18px}.jsonbox{background:#101923;color:#dceaff;border-radius:10px;padding:14px;min-height:150px;white-space:pre-wrap;overflow:auto;font:14px/1.55 Consolas,monospace}.json-title{display:flex;justify-content:space-between;align-items:center;margin:18px 0 7px}.json-title strong{font-size:.92rem}.hint{font-size:.85rem;color:var(--muted)}
     .replay-grid{display:grid;grid-template-columns:minmax(300px,680px) 1fr;gap:20px;align-items:start}#replayCanvas,#practiceCanvas{display:block;width:100%;aspect-ratio:1;background:#d9a95e;border-radius:10px}.ranking-wrap{overflow:auto;margin-top:16px}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #e5ebf1}th{background:#f6f9fb;color:#56687a}.replay-info{padding:15px;border-radius:10px;background:#eef6ff;margin-bottom:12px;line-height:1.55}.replay-info strong{display:block;font-size:1.18rem;margin-bottom:4px}.speed{display:grid;grid-template-columns:1fr 1fr;gap:8px}.replay-hidden{display:none}.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.move-log{height:160px;overflow:auto;background:#101923;color:#dceaff;border-radius:10px;padding:12px;font:14px/1.55 Consolas,monospace;white-space:pre-wrap}.warning{color:#8a5200;background:#fff6dd}
     .menu{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.menu button{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:0 5px 14px #1f3c590d}.menu button.active{background:var(--blue);color:#fff;border-color:var(--blue)}.tab-panel{display:none}.tab-panel.active{display:block}.step-label{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:50%;background:var(--blue);color:#fff;font-size:.9rem;margin-right:7px}.api-note{font-size:.9rem;color:#6c4b00;background:#fff7dd;padding:12px 14px;border-radius:9px;margin:14px 0}
-    @media(max-width:820px){.grid,.replay-grid{grid-template-columns:1fr}.studentbar,header div{align-items:flex-start;flex-direction:column}.header-actions{align-items:flex-start;flex-wrap:wrap}.buttons button{flex:1 1 160px}.menu{grid-template-columns:1fr}.menu button{width:100%}}
+    @media(max-width:820px){.grid,.replay-grid{grid-template-columns:1fr}.studentbar,header div{align-items:flex-start;flex-direction:column}.buttons button{flex:1 1 160px}.menu{grid-template-columns:1fr}.menu button{width:100%}}
   </style>
 </head>
 <body>
-  <header><div><h1>AI 오목 학생 프로그램</h1><span class="badge">19×19 · Python 알고리즘</span><div class="header-actions"><span id="headerStudent" class="header-student" hidden></span><button id="logoutButton" class="secondary" type="button" disabled>로그아웃</button></div></div></header>
+  <header><div><h1>AI 오목 학생 프로그램</h1><span class="badge">19×19 · Python 알고리즘</span></div></header>
   <main>
-    <section id="loginCard" class="card">
-      <h2>학생 로그인</h2><p class="description">학번과 비밀번호로 로그인하세요.</p>
-      <div class="auth-modes" role="group" aria-label="로그인 방식">
-        <button id="loginModeButton" type="button" class="active">로그인</button>
-        <button id="firstLoginModeButton" type="button" class="secondary">최초 접속</button>
-      </div>
-      <form id="loginForm" class="auth-form">
-        <label for="loginStudentNumber">학번</label><input id="loginStudentNumber" maxlength="20" autocomplete="username" required>
-        <label for="loginPassword">비밀번호</label><input id="loginPassword" type="password" autocomplete="current-password" required>
-        <div class="buttons"><button id="loginButton" type="submit">로그인</button></div>
-      </form>
-      <form id="firstLoginForm" class="auth-form" hidden>
-        <label for="firstStudentNumber">학번</label><input id="firstStudentNumber" maxlength="20" autocomplete="username" required>
-        <label for="firstStudentName">이름</label><input id="firstStudentName" maxlength="30" autocomplete="name" required>
-        <label for="firstPassword">새 비밀번호</label><input id="firstPassword" type="password" autocomplete="new-password" required>
-        <label for="confirmPassword">비밀번호 확인</label><input id="confirmPassword" type="password" autocomplete="new-password" required>
-        <div class="buttons"><button id="firstLoginButton" type="submit">최초 비밀번호 설정</button></div>
-      </form>
-      <div id="authStatus" class="status" role="status" aria-live="polite">백엔드에 연결하고 있습니다.</div>
+    <section id="registerCard" class="card">
+      <h2>학생 로그인</h2><p class="description">처음 접속하면 학번·이름·비밀번호를 등록하고, 다음부터는 학번과 비밀번호로 로그인합니다.</p>
+      <label for="studentNumber">학생번호</label><input id="studentNumber" maxlength="20" placeholder="예: 2301">
+      <label for="studentName">학생 이름</label><input id="studentName" maxlength="30" placeholder="예: 김학생">
+      <label for="studentPassword">비밀번호</label><input id="studentPassword" type="password" maxlength="100" placeholder="4자 이상">
+      <div class="buttons"><button id="loginButton" disabled>서버 연결 중</button><button id="joinButton" class="secondary" disabled>최초 등록</button></div>
+      <div id="connectionStatus" class="status" role="status">백엔드 서버에 연결하고 있습니다.</div>
     </section>
 
     <section id="workspace">
@@ -120,13 +107,12 @@
     </section>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
   <script>
-    let client,currentUser,currentStudent,lastTestedCode="";let recordData=null,currentRecordGame=null,replayIndex=0,replayTimer=null;
+    let currentStudent,lastTestedCode="";let recordData=null,currentRecordGame=null,replayIndex=0,replayTimer=null;
+    let authToken=sessionStorage.getItem('omokAuthToken')||'';
     let opponents=[],practice=null,practiceTimer=null,practiceBusy=false,practiceReplayIndex=0,practiceFileCode='',practiceTestedCode='',practiceAlgorithmId='',tournamentPollTimer=null;
     const $=s=>document.querySelector(s);
-    const SESSION_TOKEN_KEY='aiOmokStudentSessionToken';
     const exampleCode=$('#algorithmCode').value;
     const emptyBoard=()=>Array.from({length:19},()=>Array(19).fill(0));
 
@@ -138,88 +124,49 @@
       if(panelId==='recordsPanel'){if(currentRecordGame)drawReplayBoard(currentRecordGame,replayIndex);if(currentStudent)loadServerRecords();}
     }
     document.querySelectorAll('.menu-button').forEach(button=>button.addEventListener('click',()=>openTab(button.dataset.tab)));
-    function backendConfigured(){return typeof BACKEND_URL==='string'&&/^https?:\/\//.test(BACKEND_URL)&&!BACKEND_URL.includes('YOUR_');}
-    function setAuthenticated(student){
-      currentStudent={id:student.studentId,student_number:student.studentNumber,student_name:student.studentName,studentId:student.studentId,studentNumber:student.studentNumber,studentName:student.studentName};
-      currentUser={id:student.studentId};
-      $('#loginCard').style.display='none';$('#workspace').style.display='block';$('#headerStudent').hidden=false;
-      $('#headerStudent').textContent=`${student.studentNumber} ${student.studentName}`;$('#displayStudent').textContent=`${student.studentNumber} ${student.studentName}`;
-      $('#logoutButton').disabled=false;drawBoardCanvas($('#practiceCanvas'),emptyBoard(),null);loadOpponents();
-    }
-    function clearSession(message=''){
-      sessionStorage.removeItem(SESSION_TOKEN_KEY);currentStudent=null;currentUser=null;
-      $('#workspace').style.display='none';$('#loginCard').style.display='block';$('#headerStudent').hidden=true;$('#logoutButton').disabled=true;
-      setAuthMode(false);
-      if(message)status($('#authStatus'),message,'error');
-    }
+    function backendConfigured(){return typeof BACKEND_URL==='string'&&/^https?:\/\//.test(BACKEND_URL)&&!BACKEND_URL.includes('여기에');}
     async function api(path,options={}){
-      if(!backendConfigured())throw new Error('백엔드 주소 설정을 확인할 수 없습니다.');
+      if(!backendConfigured())throw new Error('config.js에 BACKEND_URL을 설정해야 합니다.');
       const headers={'Content-Type':'application/json',...(options.headers||{})};
-      const token=sessionStorage.getItem(SESSION_TOKEN_KEY);
-      if(token)headers.Authorization=`Bearer ${token}`;
+      if(authToken)headers.Authorization=`Bearer ${authToken}`;
       let response;
       try{response=await fetch(`${BACKEND_URL}${path}`,{...options,headers});}
-      catch(_){throw new Error('서버와 통신하지 못했습니다.');}
+      catch(_){throw new Error('서버와 통신하지 못했습니다. 잠시 후 다시 시도해 주세요.');}
       let data={};try{data=await response.json();}catch(_){data={};}
-      if(response.status===401&&path!=='/api/auth/login'&&path!=='/api/auth/first-login')clearSession('로그인이 만료되었습니다. 다시 로그인해 주세요.');
-      if(!response.ok){
-        let message=data?.detail??data?.message??`요청 실패 (${response.status})`;
-        if(Array.isArray(message))message=message.map(item=>item?.msg||String(item)).join(', ');
-        throw new Error(String(message));
-      }
+      if(!response.ok){let message=data.error||data.detail||data.message||`요청 실패 (${response.status})`;if(Array.isArray(message))message=message.map(item=>item.msg||String(item)).join(', ');throw new Error(message);}
       return data;
     }
+    function showWorkspace(){ $('#registerCard').style.display='none';$('#workspace').style.display='block';$('#displayStudent').textContent=`${currentStudent.student_number||''} ${currentStudent.student_name}`.trim();drawBoardCanvas($('#practiceCanvas'),emptyBoard(),null);loadOpponents(); }
     function makeTestInput(){ return {gameId:'TEST-GAME',turn:1,myName:currentStudent?.student_name||'학생',opponentName:'테스트 상대',myStone:1,board:emptyBoard()}; }
 
-    function setAuthMode(firstLogin){
-      $('#loginForm').hidden=firstLogin;$('#firstLoginForm').hidden=!firstLogin;
-      $('#loginModeButton').className=firstLogin?'secondary':'active';$('#firstLoginModeButton').className=firstLogin?'active':'secondary';
-      status($('#authStatus'),firstLogin?'학번과 이름을 확인한 뒤 새 비밀번호를 설정하세요.':'학번과 비밀번호를 입력하세요.');
-    }
-    $('#loginModeButton').addEventListener('click',()=>setAuthMode(false));
-    $('#firstLoginModeButton').addEventListener('click',()=>setAuthMode(true));
-    async function authenticate(studentNumber,password,button){
-      button.disabled=true;const label=button.textContent;button.textContent='로그인 중';
-      try{
-        const result=await api('/api/auth/login',{method:'POST',body:JSON.stringify({studentNumber,password})});
-        if(typeof result.accessToken!=='string'||!result.student?.studentId||!result.student?.studentNumber||!result.student?.studentName)throw new Error('로그인 응답을 확인할 수 없습니다. 선생님께 문의하세요.');
-        sessionStorage.setItem(SESSION_TOKEN_KEY,result.accessToken);setAuthenticated(result.student);status($('#authStatus'),'로그인되었습니다.','success');
-      }catch(e){status($('#authStatus'),e.message,'error');}
-      finally{button.disabled=false;button.textContent=label;}
-    }
-    $('#loginForm').addEventListener('submit',async function(event){
-      event.preventDefault();const number=$('#loginStudentNumber').value.trim(),password=$('#loginPassword').value;
-      if(!number||!password){status($('#authStatus'),'학번과 비밀번호를 입력하세요.','error');return;}
-      await authenticate(number,password,$('#loginButton'));
-    });
-    $('#firstLoginForm').addEventListener('submit',async function(event){
-      event.preventDefault();const number=$('#firstStudentNumber').value.trim(),name=$('#firstStudentName').value.trim(),password=$('#firstPassword').value,confirmation=$('#confirmPassword').value,button=$('#firstLoginButton');
-      if(!number||!name||!password||!confirmation){status($('#authStatus'),'모든 항목을 입력하세요.','error');return;}
-      if(password!==confirmation){status($('#authStatus'),'비밀번호 확인이 일치하지 않습니다.','error');return;}
-      button.disabled=true;const label=button.textContent;button.textContent='비밀번호 설정 중';
-      try{
-        await api('/api/auth/first-login',{method:'POST',body:JSON.stringify({studentNumber:number,studentName:name,password})});
-        status($('#authStatus'),'비밀번호가 설정되었습니다. 로그인합니다.','success');
-        await authenticate(number,password,button);
-      }catch(e){status($('#authStatus'),e.message,'error');}
-      finally{button.disabled=false;button.textContent=label;}
-    });
-    async function logout(){
-      const button=$('#logoutButton');button.disabled=true;stopReplay();stopPractice();
-      try{if(sessionStorage.getItem(SESSION_TOKEN_KEY))await api('/api/auth/logout',{method:'POST'});}
-      catch(_){ }
-      finally{clearSession('로그아웃되었습니다.');button.disabled=false;}
-    }
-    $('#logoutButton').addEventListener('click',logout);
-    $('#endSessionButton').addEventListener('click',logout);
     async function start(){
-      if(!backendConfigured()){status($('#authStatus'),'백엔드 주소 설정을 확인할 수 없습니다.','error');return;}
-      const token=sessionStorage.getItem(SESSION_TOKEN_KEY);
-      if(!token){status($('#authStatus'),'학번과 비밀번호를 입력하세요.');return;}
-      $('#logoutButton').disabled=false;status($('#authStatus'),'로그인 상태를 확인하고 있습니다.');
-      try{const student=await api('/api/auth/me');if(!student.studentId||!student.studentNumber||!student.studentName)throw new Error('학생 정보를 확인할 수 없습니다. 선생님께 문의하세요.');setAuthenticated(student);}
-      catch(e){if(sessionStorage.getItem(SESSION_TOKEN_KEY))status($('#authStatus'),e.message,'error');}
+      try{
+        const response=await fetch(`${BACKEND_URL}/health`);if(!response.ok)throw new Error(`서버 오류 ${response.status}`);
+        const saved=sessionStorage.getItem('omokStudent');
+        if(authToken&&saved){
+          try{const restored=await api('/api/auth/me');currentStudent=restored.student;sessionStorage.setItem('omokStudent',JSON.stringify(currentStudent));showWorkspace();return;}
+          catch(_){authToken='';sessionStorage.removeItem('omokAuthToken');sessionStorage.removeItem('omokStudent');}
+        }
+        status($('#connectionStatus'),'서버 연결 성공! 로그인하거나 최초 등록하세요.','success');
+        $('#joinButton').disabled=false;$('#loginButton').disabled=false;$('#loginButton').textContent='로그인';
+      }catch(e){status($('#connectionStatus'),'서버 연결 실패: '+e.message,'error');}
     }
+
+    $('#joinButton').addEventListener('click',async function(){
+      const number=$('#studentNumber').value.trim(),name=$('#studentName').value.trim(),password=$('#studentPassword').value;if(!number||!name||password.length<4){status($('#connectionStatus'),'학번·이름과 4자 이상의 비밀번호를 입력하세요.','error');return;}
+      this.disabled=true;this.textContent='등록 중';
+      try{const result=await api('/api/auth/first-login',{method:'POST',body:JSON.stringify({studentNumber:number,studentName:name,password})});authToken=result.token;currentStudent=result.student;sessionStorage.setItem('omokAuthToken',authToken);sessionStorage.setItem('omokStudent',JSON.stringify(currentStudent));showWorkspace();}
+      catch(e){status($('#connectionStatus'),'최초 등록 실패: '+e.message,'error');this.disabled=false;this.textContent='최초 등록';}
+    });
+    $('#loginButton').addEventListener('click',async function(){
+      const number=$('#studentNumber').value.trim(),password=$('#studentPassword').value;if(!number||!password){status($('#connectionStatus'),'학번과 비밀번호를 입력하세요.','error');return;}
+      this.disabled=true;this.textContent='로그인 중';
+      try{const result=await api('/api/auth/login',{method:'POST',body:JSON.stringify({studentNumber:number,password})});authToken=result.token;currentStudent=result.student;sessionStorage.setItem('omokAuthToken',authToken);sessionStorage.setItem('omokStudent',JSON.stringify(currentStudent));showWorkspace();}
+      catch(e){status($('#connectionStatus'),'로그인 실패: '+e.message,'error');this.disabled=false;this.textContent='로그인';}
+    });
+    $('#endSessionButton').addEventListener('click',async function(){
+      if(!confirm('현재 학생 세션을 종료하고 다른 학생으로 시작할까요?'))return;this.disabled=true;this.textContent='세션 종료 중';stopReplay();stopPractice();try{await api('/api/auth/logout',{method:'POST'});}catch(_){}authToken='';currentStudent=null;sessionStorage.removeItem('omokAuthToken');sessionStorage.removeItem('omokStudent');location.reload();
+    });
 
     $('#algorithmFile').addEventListener('change',function(){const file=this.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{$('#algorithmCode').value=reader.result;invalidate();};reader.readAsText(file);});
     $('#algorithmCode').addEventListener('input',invalidate);
@@ -231,9 +178,8 @@
       this.disabled=true;status($('#submitStatus'),'Python 실행 서버에서 알고리즘을 테스트하고 있습니다.');
       try{
         const result=await api('/api/algorithms/test',{method:'POST',body:JSON.stringify({language:'PYTHON',sourceCode:code,gameState:makeTestInput()})});
-        const move=result.move;
-        if(!move||!Number.isInteger(move.x)||!Number.isInteger(move.y)||move.x<0||move.x>18||move.y<0||move.y>18)throw new Error('알고리즘이 0~18 범위의 정수 좌표를 반환해야 합니다.');
-        lastTestedCode=code;$('#submitButton').disabled=false;status($('#submitStatus'),`테스트 성공! 좌표 (${move.x}, ${move.y}) · ${result.executionTimeMs??'-'}ms`,'success');
+        if(!result.move||!Number.isInteger(result.move.x)||!Number.isInteger(result.move.y))throw new Error('서버가 올바른 좌표를 반환하지 않았습니다.');
+        lastTestedCode=code;$('#submitButton').disabled=false;status($('#submitStatus'),`테스트 성공! 좌표 (${result.move.x}, ${result.move.y}) · ${result.executionTimeMs??'-'}ms`,'success');
       }catch(e){status($('#submitStatus'),'테스트 실패: '+e.message,'error');}
       this.disabled=false;
     });
