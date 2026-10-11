@@ -119,16 +119,18 @@
 
   <script src="./config.js"></script>
   <script>
-    let currentStudent,lastTestedCode="";let currentFinalSubmission=null,selectedAlgorithmFileName="";let recordData=null,displayGames=[],currentRecordGame=null,replayIndex=0,replayTimer=null;
+    let currentStudent,lastTestedCode="";let currentFinalSubmission=null,selectedAlgorithmFileName="",finalAlgorithmRequest=null;let recordData=null,displayGames=[],currentRecordGame=null,replayIndex=0,replayTimer=null;
     let authToken=sessionStorage.getItem('omokAuthToken')||'';
     let opponents=[],practice=null,practiceTimer=null,practiceBusy=false,practiceReplayIndex=0,practiceFileCode='',practiceTestedCode='',practiceAlgorithmId='',tournamentPollTimer=null,recordsLoading=false;
     const $=s=>document.querySelector(s);
+    const defaultAlgorithmCode=$('#algorithmCode').value;
     const emptyBoard=()=>Array.from({length:19},()=>Array(19).fill(0));
 
     function status(el,message,type="") { el.textContent=message; el.className='status '+type; }
     function openTab(panelId){
       document.querySelectorAll('.tab-panel').forEach(panel=>panel.classList.toggle('active',panel.id===panelId));
       document.querySelectorAll('.menu-button').forEach(button=>button.classList.toggle('active',button.dataset.tab===panelId));
+      if(panelId==='uploadPanel'&&currentStudent)loadMyFinalAlgorithm();
       if(panelId==='practicePanel')drawBoardCanvas($('#practiceCanvas'),practice?.board||emptyBoard(),practice?.moves?.at(-1)||null);
       if(panelId==='recordsPanel'){if(currentRecordGame)drawReplayBoard(currentRecordGame,replayIndex);if(currentStudent)loadServerRecords();}
     }
@@ -145,20 +147,56 @@
       if(!response.ok){let message=data.error||data.detail||data.message||`요청 실패 (${response.status})`;if(Array.isArray(message))message=message.map(item=>item.msg||String(item)).join(', ');throw new Error(message);}
       return data;
     }
-    function showWorkspace(){ $('#registerCard').style.display='none';$('#workspace').style.display='block';$('#displayStudent').textContent=`${currentStudent.student_number||''} ${currentStudent.student_name}`.trim();drawBoardCanvas($('#practiceCanvas'),emptyBoard(),null);loadMySubmission();loadOpponents();loadServerRecords(); }
+    function showWorkspace(){ $('#registerCard').style.display='none';$('#workspace').style.display='block';$('#displayStudent').textContent=`${currentStudent.student_number||''} ${currentStudent.student_name}`.trim();drawBoardCanvas($('#practiceCanvas'),emptyBoard(),null);loadMyFinalAlgorithm();loadOpponents();loadServerRecords(); }
     function makeTestInput(){ return {gameId:'TEST-GAME',turn:1,myName:currentStudent?.student_name||'학생',opponentName:'테스트 상대',myStone:1,board:emptyBoard()}; }
     function formatSubmittedAt(value){if(!value)return '시각 정보 없음';const date=new Date(value);return Number.isNaN(date.getTime())?'시각 정보 없음':date.toLocaleString('ko-KR');}
-    async function loadMySubmission(){
-      $('#downloadAlgorithmButton').disabled=true;
-      try{
-        const result=await api('/api/algorithms/mine');currentFinalSubmission=result.submission||null;
-        if(!currentFinalSubmission){status($('#currentSubmissionStatus'),'아직 최종 제출한 알고리즘이 없습니다.');return;}
-        const submission=currentFinalSubmission;selectedAlgorithmFileName=submission.fileName||'student_ai.py';
-        $('#algorithmCode').value=submission.sourceCode||'';
-        $('#algorithmFileName').textContent=`저장된 파일명: ${selectedAlgorithmFileName}`;lastTestedCode='';$('#submitButton').disabled=true;
-        $('#downloadAlgorithmButton').disabled=false;
-        status($('#currentSubmissionStatus'),`최종 제출 완료 · ${submission.algorithmName||'나의 오목 AI'} · ${selectedAlgorithmFileName} · 버전 ${submission.version??'-'} · 제출 ${formatSubmittedAt(submission.submittedAt)}`,'success');
-      }catch(error){$('#downloadAlgorithmButton').disabled=!currentFinalSubmission;status($('#currentSubmissionStatus'),'최종 제출본 조회 실패: '+error.message,'error');}
+    async function loadMyFinalAlgorithm(refreshAfterCurrent=false){
+      if(finalAlgorithmRequest){
+        if(!refreshAfterCurrent)return finalAlgorithmRequest;
+        try{await finalAlgorithmRequest;}catch(_){}
+        return loadMyFinalAlgorithm();
+      }
+
+      const request=(async()=>{
+        try{
+          const result=await api('/api/algorithms/mine');
+          let algorithm;
+          if(Object.prototype.hasOwnProperty.call(result,'algorithm'))algorithm=result.algorithm;
+          else if(Object.prototype.hasOwnProperty.call(result,'submission'))algorithm=result.submission;
+          else throw new Error('응답에 최종 제출본 정보가 없습니다.');
+
+          if(algorithm===null){
+            currentFinalSubmission=null;selectedAlgorithmFileName='';lastTestedCode='';
+            $('#algorithmCode').value=defaultAlgorithmCode;$('#algorithmFileName').textContent='선택된 파일 없음';
+            $('#submitButton').disabled=true;$('#downloadAlgorithmButton').disabled=true;
+            status($('#currentSubmissionStatus'),'아직 최종 제출한 알고리즘이 없습니다.');
+            return null;
+          }
+          if(!algorithm||typeof algorithm!=='object')throw new Error('최종 제출본 형식이 올바르지 않습니다.');
+          const sourceCode=algorithm.sourceCode??algorithm.source_code;
+          if(typeof sourceCode!=='string')throw new Error('최종 제출본 응답에 sourceCode가 없습니다.');
+          const fileName=algorithm.fileName||algorithm.file_name||'student_ai.py';
+          currentFinalSubmission={
+            id:algorithm.id,
+            algorithmName:algorithm.algorithmName||algorithm.algorithm_name||'나의 오목 AI',
+            fileName,
+            sourceCode,
+            version:algorithm.version,
+            submittedAt:algorithm.submittedAt||algorithm.submitted_at||null,
+          };
+          selectedAlgorithmFileName=fileName;$('#algorithmCode').value=sourceCode;
+          $('#algorithmFileName').textContent=`저장된 파일명: ${fileName}`;lastTestedCode='';$('#submitButton').disabled=true;
+          $('#downloadAlgorithmButton').disabled=false;
+          status($('#currentSubmissionStatus'),`최종 제출 완료 · ${currentFinalSubmission.algorithmName} · ${fileName} · 버전 ${currentFinalSubmission.version??'-'} · 제출 ${formatSubmittedAt(currentFinalSubmission.submittedAt)}`,'success');
+          return currentFinalSubmission;
+        }catch(error){
+          $('#downloadAlgorithmButton').disabled=!currentFinalSubmission;
+          status($('#currentSubmissionStatus'),`최종 제출본 조회 실패: ${error.message}`,'error');
+          return currentFinalSubmission;
+        }
+      })();
+      finalAlgorithmRequest=request;
+      try{return await request;}finally{if(finalAlgorithmRequest===request)finalAlgorithmRequest=null;}
     }
 
     async function start(){
@@ -213,7 +251,7 @@
         const uploadedFile=$('#algorithmFile').files[0],fileName=uploadedFile?.name||selectedAlgorithmFileName||currentFinalSubmission?.fileName||`${currentStudent.student_number||'student'}_omok_ai.py`,fileStem=uploadedFile?.name.replace(/\.[^.]+$/,'').slice(0,80),algorithmName=fileStem||currentFinalSubmission?.algorithmName||'나의 오목 AI';
         const result=await api('/api/algorithms/submit',{method:'POST',body:JSON.stringify({studentId:currentStudent.id,studentNumber:currentStudent.student_number,studentName:currentStudent.student_name,algorithmName,language:'PYTHON',fileName,sourceCode:code})});
         currentFinalSubmission={algorithmName,fileName,version:result.version,sourceCode:code,submittedAt:result.submittedAt||null};selectedAlgorithmFileName=fileName;$('#downloadAlgorithmButton').disabled=false;
-        await loadMySubmission();status($('#currentSubmissionStatus'),`${fileName} · 최종 제출 완료 · 버전 ${result.version??'-'} · 제출 ${formatSubmittedAt(currentFinalSubmission?.submittedAt)}`,'success');status($('#submitStatus'),`제출 완료! 버전 ${result.version??'-'}이 상대 목록에 등록되었습니다.`,'success');this.textContent='제출 완료';await loadOpponents();
+        await loadMyFinalAlgorithm(true);status($('#submitStatus'),`제출 완료! 버전 ${result.version??'-'}이 상대 목록에 등록되었습니다.`,'success');this.textContent='제출 완료';await loadOpponents();
       }catch(e){status($('#submitStatus'),'제출 실패: '+e.message,'error');this.disabled=false;this.textContent='최종 제출';}
     });
 
