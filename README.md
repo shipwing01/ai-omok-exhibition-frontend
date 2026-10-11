@@ -33,6 +33,8 @@ const BACKEND_URL = "https://YOUR_BACKEND.onrender.com";
 
 별도 빌드 과정은 필요하지 않습니다. 배포 루트에 `index.html`과 `config.js`가 있어야 합니다.
 
+연습 대국의 상대 목록에는 다른 학생의 최신 FINAL 제출본과 로그인한 학생 본인의 최신 FINAL 제출본이 함께 표시됩니다. 내 FINAL은 연습용 임시 알고리즘과 대국할 수 있으며, 다른 학생 알고리즘의 소스 코드는 목록에서 가져오지 않습니다.
+
 ## 주의
 
 - `service_role`, `sb_secret` 키는 프론트엔드에 넣으면 안 됩니다.

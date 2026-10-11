@@ -65,7 +65,7 @@
         </section>
       <section id="practicePanel" class="card tab-panel">
         <h2>2. 최종 제출된 알고리즘과 연습 대국</h2>
-        <p class="description">상대의 최종 제출 알고리즘과 대국합니다. 상대 알고리즘 코드는 브라우저로 전달되지 않습니다.</p>
+        <p class="description">다른 학생 또는 내 최종 제출 알고리즘과 대국합니다. 상대 알고리즘 코드는 브라우저로 전달되지 않습니다.</p>
         <div class="practice-setup">
           <div>
             <label for="practiceMyFile">대결에 사용할 내 임시 Python 파일 선택</label>
@@ -76,7 +76,7 @@
             <div id="practiceMyStatus" class="status">내 Python 파일을 선택하고 테스트하세요.</div>
           </div>
           <div>
-            <label for="opponentSelect">대결할 상대의 최종 제출 알고리즘 선택</label>
+            <label for="opponentSelect">대결할 최종 제출 알고리즘 선택</label>
             <select id="opponentSelect"><option value="">상대 목록을 불러오세요.</option></select>
             <div class="buttons"><button id="refreshOpponentsButton" class="secondary">상대 목록 새로고침</button></div>
             <div id="opponentStatus" class="hint" role="status"></div>
@@ -131,7 +131,7 @@
       document.querySelectorAll('.tab-panel').forEach(panel=>panel.classList.toggle('active',panel.id===panelId));
       document.querySelectorAll('.menu-button').forEach(button=>button.classList.toggle('active',button.dataset.tab===panelId));
       if(panelId==='uploadPanel'&&currentStudent)loadMyFinalAlgorithm();
-      if(panelId==='practicePanel')drawBoardCanvas($('#practiceCanvas'),practice?.board||emptyBoard(),practice?.moves?.at(-1)||null);
+      if(panelId==='practicePanel'){drawBoardCanvas($('#practiceCanvas'),practice?.board||emptyBoard(),practice?.moves?.at(-1)||null);if(currentStudent)loadOpponents();}
       if(panelId==='recordsPanel'){if(currentRecordGame)drawReplayBoard(currentRecordGame,replayIndex);if(currentStudent)loadServerRecords();}
     }
     document.querySelectorAll('.menu-button').forEach(button=>button.addEventListener('click',()=>openTab(button.dataset.tab)));
@@ -255,10 +255,14 @@
       }catch(e){status($('#submitStatus'),'제출 실패: '+e.message,'error');this.disabled=false;this.textContent='최종 제출';}
     });
 
+    function compareText(first,second){first=String(first??'');second=String(second??'');return first<second?-1:first>second?1:0;}
     async function loadOpponents(){
       if(!currentStudent)return;const button=$('#refreshOpponentsButton');button.disabled=true;button.textContent='불러오는 중';
       try{
-        const result=await api(`/api/opponents?excludeStudentId=${encodeURIComponent(currentStudent.id)}`);opponents=(Array.isArray(result)?result:(result.opponents||[])).filter(item=>item&&item.studentId!==currentStudent.id);const select=$('#opponentSelect');select.innerHTML=opponents.length?'<option value="">상대를 선택하세요.</option>'+opponents.map(o=>`<option value="${safeText(o.algorithmId||o.submissionId||'')}">${safeText(o.studentNumber||'')} ${safeText(o.studentName||'학생')} · ${safeText(o.algorithmName||'알고리즘')} v${safeText(o.version??'-')}</option>`).join(''):'<option value="">대국 가능한 상대가 없습니다.</option>';status($('#opponentStatus'),opponents.length?`${opponents.length}명의 최종 제출 알고리즘을 불러왔습니다.`:'다른 학생의 최종 제출 알고리즘이 없습니다.',opponents.length?'success':'');
+        const [result]=await Promise.all([api('/api/opponents'),loadMyFinalAlgorithm()]);const listed=Array.isArray(result)?result:(result.opponents||[]),entries=listed.filter(item=>item&&item.studentId!==currentStudent.id).map(item=>({...item,isOwnFinal:false}));const ownSubmission=listed.find(item=>item&&item.studentId===currentStudent.id);
+        if(currentFinalSubmission&&ownSubmission)entries.push({algorithmId:ownSubmission.algorithmId||ownSubmission.submissionId,studentId:currentStudent.id,studentNumber:ownSubmission.studentNumber||currentStudent.student_number||'',studentName:ownSubmission.studentName||currentStudent.student_name||'',algorithmName:currentFinalSubmission.algorithmName||ownSubmission.algorithmName||'나의 오목 AI',version:currentFinalSubmission.version??ownSubmission.version,isOwnFinal:true});
+        const seen=new Set();opponents=entries.filter(item=>{const id=item.algorithmId||item.submissionId;if(!id||seen.has(id))return false;seen.add(id);return true;}).sort((first,second)=>compareText(first.studentNumber,second.studentNumber)||compareText(first.studentName,second.studentName)||compareText(first.algorithmName,second.algorithmName));
+        const select=$('#opponentSelect');select.innerHTML=opponents.length?'<option value="">상대를 선택하세요.</option>'+opponents.map(o=>`<option value="${safeText(o.algorithmId||o.submissionId)}">${safeText(o.studentNumber||'')} ${safeText(o.studentName||'학생')} · ${safeText(o.algorithmName||'알고리즘')}${o.isOwnFinal?' (내 최종 제출본)':` v${safeText(o.version??'-')}`}</option>`).join(''):'<option value="">대국 가능한 상대가 없습니다.</option>';status($('#opponentStatus'),opponents.length?`${opponents.length}개의 최종 제출 알고리즘을 불러왔습니다.`:'최종 제출된 알고리즘이 없습니다.',opponents.length?'success':'');
       }catch(e){status($('#opponentStatus'),'상대 목록 오류: '+e.message,'error');}
       button.disabled=false;button.textContent='상대 목록 새로고침';
     }
